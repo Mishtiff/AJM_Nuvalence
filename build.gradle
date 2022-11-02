@@ -1,0 +1,50 @@
+apply plugin: 'java-library'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'com.google.guava:guava:23.0'
+    testImplementation 'junit:junit:4.12'
+}
+
+ext {
+   javaMainClass = "MainApplication"
+}
+
+if (project.hasProperty("args")) {
+    ext.cmdargs = project.getProperty("args")
+} else { 
+    ext.cmdargs = ""
+}
+task run(type: JavaExec) {
+    group = "Execution"
+    description = "Run the main class with JavaExecTask"
+    classpath = sourceSets.main.runtimeClasspath
+    main = javaMainClass
+    args cmdargs.split()
+}
+
+test {
+    useJUnit()
+    afterSuite { desc, result ->
+    if (!desc.parent)
+        println("${result.resultType} " +
+            "(${result.testCount} tests, " +
+            "${result.successfulTestCount} successes, " +
+            "${result.failedTestCount} failures, " +
+            "${result.skippedTestCount} skipped)")
+    }
+    maxHeapSize = "1024m"
+    jvmArgs "-XX:MaxPermSize=256m"
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'MainApplication'
+        )
+    }
+}
